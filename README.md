@@ -10,7 +10,7 @@ A real-time fraud detection and analytics platform built with the MERN stack (Mo
   - **Velocity Rule**: Flags rapid-fire transaction bursts (>3 transactions per card within a 1-minute window).
   - **Location Jump Rule**: flags a card used from a different location within 5 minutes of its previous transaction.
 - **Live WebSocket Pipeline**: Instantly streams transactions, fraud alerts, and threat updates to the browser using Socket.io without polling.
-- **Enterprise SaaS Dashboard**:
+- **Dashboard**:
   - Clean light-mode design tokens with high-contrast text hierarchy and subtle elevation.
   - Live cumulative throughput and anomaly counters (`GET /api/transactions/stats`).
   - 10-second rolling trend line chart tracking total vs. flagged transaction velocity.
