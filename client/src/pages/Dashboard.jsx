@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useMemo } from 'react';
+import React, { useEffect, useState, useContext, useMemo, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import useSocket from '../hooks/useSocket';
@@ -45,6 +45,9 @@ const Dashboard = () => {
   const [totalProcessed, setTotalProcessed] = useState(0);
   const [alertsProcessed, setAlertsProcessed] = useState(0);
 
+  // Set of processed transaction IDs to prevent double-counting in React StrictMode
+  const processedIdsRef = useRef(new Set());
+
   // Real-time backend socket connection
   const { latestFraudAlert, latestNewTransaction } = useSocket('http://localhost:3000');
 
@@ -65,6 +68,9 @@ const Dashboard = () => {
 
         if (isMounted) {
           if (Array.isArray(txRes.data)) {
+            txRes.data.forEach(t => {
+              if (t._id) processedIdsRef.current.add(t._id);
+            });
             setTransactions(txRes.data);
           }
           if (statsRes.data) {
@@ -80,19 +86,24 @@ const Dashboard = () => {
     return () => { isMounted = false; };
   }, [token]);
 
-  // Prepend real socket newTransaction events (deduped by _id) and update real cumulative counters
+  // Prepend real socket newTransaction events (deduped by _id with useRef Set)
+  // Counters incremented OUTSIDE updater to prevent double-counting in StrictMode
   useEffect(() => {
     if (!latestNewTransaction || !latestNewTransaction._id) return;
-    setTransactions(prev => {
-      if (prev.some(t => t._id === latestNewTransaction._id)) {
-        return prev;
-      }
-      setTotalProcessed(count => count + 1);
-      if (latestNewTransaction.flagged) {
-        setAlertsProcessed(count => count + 1);
-      }
-      return [latestNewTransaction, ...prev].slice(0, 50);
-    });
+    const txId = latestNewTransaction._id;
+
+    if (processedIdsRef.current.has(txId)) {
+      return;
+    }
+    processedIdsRef.current.add(txId);
+
+    // Update cumulative counters outside state updater
+    setTotalProcessed(count => count + 1);
+    if (latestNewTransaction.flagged) {
+      setAlertsProcessed(count => count + 1);
+    }
+
+    setTransactions(prev => [latestNewTransaction, ...prev.filter(t => t._id !== txId)].slice(0, 50));
   }, [latestNewTransaction]);
 
   // Show AlertToast on real fraudAlert events
@@ -112,7 +123,9 @@ const Dashboard = () => {
     }
   }, [latestFraudAlert, soundEnabled]);
 
-  const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
 
   // Chart aggregation: group by 10-second intervals to show actual trend lines
   const chartData = useMemo(() => {

@@ -1,19 +1,19 @@
 # Real-Time Fraud Detection & Analytics Platform
 
-An enterprise-grade, real-time fraud detection and analytics platform built with the MERN stack (MongoDB, Express, React, Node.js), Socket.io, Vite, and Tailwind CSS. Featuring a modern, clean light-mode SaaS interface inspired by Stripe and Datadog.
+A real-time fraud detection and analytics platform built with the MERN stack (MongoDB, Express, React, Node.js), Socket.io, Vite, and Tailwind CSS. Featuring a modern, clean light-mode SaaS interface inspired by Stripe and Datadog.
 
 ---
 
 ## Features
 
-- **Real-Time Fraud Heuristics Engine**: Evaluates transactions instantly using multi-factor fraud detection algorithms:
+- **Real-Time Fraud Heuristics Engine**: Evaluates transactions instantly using fraud detection algorithms:
   - **Velocity Rule**: Flags rapid-fire transaction bursts (>3 transactions per card within a 1-minute window).
-  - **Location Jump Rule**: Flags impossible geographic transitions (cross-border jumps within short timeframes).
+  - **Location Jump Rule**: flags a card used from a different location within 5 minutes of its previous transaction.
 - **Live WebSocket Pipeline**: Instantly streams transactions, fraud alerts, and threat updates to the browser using Socket.io without polling.
 - **Enterprise SaaS Dashboard**:
   - Clean light-mode design tokens with high-contrast text hierarchy and subtle elevation.
   - Live cumulative throughput and anomaly counters (`GET /api/transactions/stats`).
-  - 10-second rolling trend area charts tracking total vs. flagged transaction velocity.
+  - 10-second rolling trend line chart tracking total vs. flagged transaction velocity.
   - Interactive tabbed feeds: **Overview**, **Transactions Feed**, and **Security Alerts**.
   - Web Audio API synthesized oscillator audio warnings for immediate threat awareness.
 - **Realistic Anomaly Simulator**:
